@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JEDI // Kyber Harmonics — Sarimoko</title>
+<style>
+  :root {
+    --bg: #05080d;
+    --primary: #38bdf8;
+    --secondary: #fbbf24;
+    --emerald: #34d399;
+    --corrupt: #ef4444;
+    --active: var(--primary);
+    --text: #e2e8f0;
+    --muted: #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body {
+    background: radial-gradient(circle at center, #0c1624 0%, var(--bg) 75%);
+    color: var(--text);
+    font-family: 'Courier New', Courier, monospace;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+  }
+  header, footer, .controls {
+    position: relative;
+    z-index: 10;
+    padding: 1.5rem 2rem;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: none;
+  }
+  .brand h1 {
+    font-size: 1.2rem;
+    letter-spacing: 0.35em;
+    color: var(--active);
+    text-shadow: 0 0 15px var(--active);
+    transition: color 0.4s, text-shadow 0.4s;
+  }
+  .brand p {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    margin-top: 0.35rem;
+  }
+  .crystal-selector {
+    pointer-events: auto;
+    display: flex;
+    gap: 0.6rem;
+  }
+  .crystal-btn {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--text);
+    padding: 0.4rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.25s;
+    backdrop-filter: blur(6px);
+  }
+  .crystal-btn:hover, .crystal-btn.active {
+    border-color: var(--active);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+    color: #fff;
+  }
+  .center-prompt {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+    text-align: center;
+    pointer-events: auto;
+    transition: opacity 0.6s;
+  }
+  .center-prompt.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  #ignite-btn {
+    background: rgba(5, 8, 13, 0.85);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 1rem 2rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    letter-spacing: 0.3em;
+    cursor: pointer;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.25);
+    transition: all 0.3s;
+  }
+  #ignite-btn:hover {
+    background: var(--primary);
+    color: var(--bg);
+    box-shadow: 0 0 40px var(--primary);
+  }
+  .maxim {
+    position: fixed;
+    bottom: 4.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    text-align: center;
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    color: rgba(226, 232, 240, 0.45);
+    pointer-events: none;
+    width: 90%;
+  }
+  footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+  }
+  #easter-trigger {
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+    transition: color 0.3s, text-shadow 0.3s;
+  }
+  #easter-trigger:hover {
+    color: var(--text);
+  }
+  #sith-portal {
+    display: none;
+    color: var(--corrupt);
+    text-decoration: none;
+    font-weight: bold;
+    letter-spacing: 0.2em;
+    text-shadow: 0 0 12px var(--corrupt);
+    animation: pulseRed 1.5s infinite alternate;
+  }
+  #sith-portal.unlocked {
+    display: inline-block;
+  }
+  @keyframes pulseRed {
+    from { opacity: 0.7; }
+    to { opacity: 1; text-shadow: 0 0 20px #ff0000; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="holocron"></canvas>
+
+<header>
+  <div class="brand">
+    <h1 id="title-text">JEDI // HOLOCRON</h1>
+    <p>KYBER RESONANCE CHAMBER — SARIMOKO.COM</p>
+  </div>
+  <div class="crystal-selector">
+    <button class="crystal-btn active" data-type="guardian" data-color="#38bdf8" data-freq="110">GUARDIAN [BLUE]</button>
+    <button class="crystal-btn" data-type="consular" data-color="#34d399" data-freq="130.81">CONSULAR [GREEN]</button>
+    <button class="crystal-btn" data-type="sentinel" data-color="#fbbf24" data-freq="146.83">SENTINEL [GOLD]</button>
+  </div>
+</header>
+
+<div class="center-prompt" id="prompt">
+  <button id="ignite-btn">ATTUNE KYBER CRYSTAL</button>
+</div>
+
+<div class="maxim" id="maxim">THERE IS NO EMOTION, THERE IS PEACE.</div>
+
+<footer>
+  <div>MOVE CURSOR TO MODULATE HARMONICS // CLICK TO CHIME</div>
+  <div>
+    <a href="https://sith.sarimoko.com" id="sith-portal">[ BLEED CRYSTAL → SITH.SARIMOKO.COM ]</a>
+    <span id="easter-trigger" title="Crystal Equilibrium">SYS.BAL // 0.00</span>
+  </div>
+</footer>
+
+<script>
+const canvas = document.getElementById('holocron');
+const ctx = canvas.getContext('2d');
+let width, height, cx, cy;
+
+function resize() {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+  cx = width / 2;
+  cy = height / 2;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// State
+let audioCtx = null;
+let isRunning = false;
+let activeColor = '#38bdf8';
+let baseFreq = 110;
+let isCorrupted = false;
+let crackClicks = 0;
+
+let mouse = { x: cx, y: cy, vx: 0, vy: 0, lastX: cx, lastY: cy };
+let rotation = 0;
+let particles = [];
+let ripples = [];
+
+const maxims = [
+  "THERE IS NO EMOTION, THERE IS PEACE.",
+  "THERE IS NO IGNORANCE, THERE IS KNOWLEDGE.",
+  "THERE IS NO PASSION, THERE IS SERENITY.",
+  "THERE IS NO CHAOS, THERE IS HARMONY.",
+  "THERE IS NO DEATH, THERE IS THE FORCE."
+];
+let maximIdx = 0;
+
+// Web Audio Engine (Procedural Saber Hum + Harmonic Chimes)
+let humOsc1, humOsc2, humFilter, humGain, masterGain;
+
+function initAudio() {
+  if (audioCtx) return;
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new AudioContext();
+
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.35;
+  masterGain.connect(audioCtx.destination);
+
+  // Saber / Holocron Drone
+  humOsc1 = audioCtx.createOscillator();
+  humOsc2 = audioCtx.createOscillator();
+  humOsc1.type = 'sawtooth';
+  humOsc2.type = 'triangle';
+  humOsc1.frequency.value = baseFreq;
+  humOsc2.frequency.value = baseFreq * 1.005; // subtle beating
+
+  humFilter = audioCtx.createBiquadFilter();
+  humFilter.type = 'lowpass';
+  humFilter.frequency.value = 240;
+  humFilter.Q.value = 4;
+
+  humGain = audioCtx.createGain();
+  humGain.gain.value = 0.25;
+
+  humOsc1.connect(humFilter);
+  humOsc2.connect(humFilter);
+  humFilter.connect(humGain);
+  humGain.connect(masterGain);
+
+  humOsc1.start();
+  humOsc2.start();
+  isRunning = true;
+}
+
+function triggerChime(x, y) {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  const scale = isCorrupted ? [1, 1.059, 1.334, 1.414, 1.781] : [1, 1.125, 1.25, 1.5, 1.667, 2];
+  const mult = scale[Math.floor(Math.random() * scale.length)];
+  const freq = baseFreq * 4 * mult;
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = isCorrupted ? 'sawtooth' : 'sine';
+  osc.frequency.setValueAtTime(freq, now);
+  osc.frequency.exponentialRampToValueAtTime(freq * (isCorrupted ? 0.92 : 1.01), now + 1.8);
+
+  gain.gain.setValueAtTime(0.001, now);
+  gain.gain.linearRampToValueAtTime(0.18, now + 0.04);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+
+  osc.connect(gain);
+  gain.connect(masterGain);
+  osc.start(now);
+  osc.stop(now + 2.25);
+
+  ripples.push({ x, y, r: 10, alpha: 0.9 });
+}
+
+// UI Interactions
+document.getElementById('ignite-btn').addEventListener('click', () => {
+  initAudio();
+  document.getElementById('prompt').classList.add('hidden');
+  triggerChime(cx, cy);
+});
+
+document.querySelectorAll('.crystal-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (isCorrupted) return;
+    document.querySelectorAll('.crystal-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeColor = btn.dataset.color;
+    baseFreq = parseFloat(btn.dataset.freq);
+    document.documentElement.style.setProperty('--active', activeColor);
+    if (audioCtx) {
+      humOsc1.frequency.setTargetAtTime(baseFreq, audioCtx.currentTime, 0.2);
+      humOsc2.frequency.setTargetAtTime(baseFreq * 1.005, audioCtx.currentTime, 0.2);
+      triggerChime(cx, cy);
+    }
+  });
+});
+
+// Easter Egg Logic: Click SYS.BAL 5 times to bleed the crystal
+const easterTrigger = document.getElementById('easter-trigger');
+const sithPortal = document.getElementById('sith-portal');
+
+easterTrigger.addEventListener('click', () => {
+  crackClicks++;
+  const instability = (crackClicks * 0.2).toFixed(2);
+  easterTrigger.textContent = `SYS.BAL // -${instability}`;
+  easterTrigger.style.color = '#f87171';
+
+  if (crackClicks >= 5 && !isCorrupted) {
+    isCorrupted = true;
+    activeColor = '#ef4444';
+    baseFreq = 55; // Drop an octave into Sith bass
+    document.documentElement.style.setProperty('--active', '#ef4444');
+    document.getElementById('title-text').textContent = 'JEDI // CRYSTAL BLED';
+    document.getElementById('maxim').textContent = 'PEACE IS A LIE. THERE IS ONLY PASSION.';
+    document.getElementById('maxim').style.color = '#ef4444';
+    easterTrigger.style.display = 'none';
+    sithPortal.classList.add('unlocked');
+
+    if (audioCtx) {
+      humOsc1.frequency.setTargetAtTime(55, audioCtx.currentTime, 0.3);
+      humOsc2.frequency.setTargetAtTime(58.27, audioCtx.currentTime, 0.3); // dissonant minor 2nd
+      humFilter.frequency.setTargetAtTime(600, audioCtx.currentTime, 0.3);
+      triggerChime(cx, cy);
+    }
+  }
+});
+
+window.addEventListener('mousemove', e => {
+  mouse.vx = e.clientX - mouse.lastX;
+  mouse.vy = e.clientY - mouse.lastY;
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  mouse.lastX = e.clientX;
+  mouse.lastY = e.clientY;
+
+  if (isRunning && audioCtx) {
+    const speed = Math.min(Math.hypot(mouse.vx, mouse.vy), 80);
+    const targetCutoff = (isCorrupted ? 300 : 200) + speed * 14;
+    const pitchShift = 1 + (speed * 0.0012);
+    humFilter.frequency.setTargetAtTime(targetCutoff, audioCtx.currentTime, 0.08);
+    humOsc1.frequency.setTargetAtTime(baseFreq * pitchShift, audioCtx.currentTime, 0.08);
+  }
+});
+
+window.addEventListener('click', e => {
+  if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.id === 'easter-trigger') return;
+  if (!isRunning) {
+    initAudio();
+    document.getElementById('prompt').classList.add('hidden');
+  }
+  triggerChime(e.clientX, e.clientY);
+  if (!isCorrupted) {
+    maximIdx = (maximIdx + 1) % maxims.length;
+    document.getElementById('maxim').textContent = maxims[maximIdx];
+  }
+});
+
+// Particles
+for (let i = 0; i < 65; i++) {
+  particles.push({
+    angle: Math.random() * Math.PI * 2,
+    radius: 80 + Math.random() * 260,
+    speed: (0.002 + Math.random() * 0.006) * (Math.random() < 0.5 ? 1 : -1),
+    size: 1 + Math.random() * 2.2
+  });
+}
+
+// Render Loop
+function draw() {
+  ctx.fillStyle = 'rgba(5, 8, 13, 0.22)';
+  ctx.fillRect(0, 0, width, height);
+
+  const speed = Math.hypot(mouse.vx, mouse.vy);
+  mouse.vx *= 0.9;
+  mouse.vy *= 0.9;
+
+  rotation += (isCorrupted ? -0.015 : 0.006) + speed * 0.0005;
+
+  // Draw Sacred Geometry Holocron Rings
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.strokeStyle = activeColor;
+  ctx.shadowColor = activeColor;
+  ctx.shadowBlur = isCorrupted ? 25 : 15;
+
+  for (let ring = 1; ring <= 3; ring++) {
+    ctx.save();
+    ctx.rotate(rotation * (ring % 2 === 0 ? -1 : 1) * (ring * 0.5));
+    ctx.lineWidth = ring === 1 ? 1.8 : 0.8;
+    ctx.globalAlpha = 0.35 + (ring * 0.15);
+
+    const sides = isCorrupted ? 3 : 6;
+    const r = 70 * ring + Math.sin(Date.now() * 0.002 + ring) * 6;
+    ctx.beginPath();
+    for (let i = 0; i <= sides; i++) {
+      const a = (i / sides) * Math.PI * 2;
+      const px = Math.cos(a) * r;
+      const py = Math.sin(a) * r;
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Core Kyber Diamond
+  ctx.save();
+  ctx.rotate(Math.sin(Date.now() * 0.0015) * 0.2);
+  ctx.fillStyle = activeColor;
+  ctx.globalAlpha = 0.85;
+  ctx.beginPath();
+  ctx.moveTo(0, -38);
+  ctx.lineTo(22, 0);
+  ctx.lineTo(0, 38);
+  ctx.lineTo(-22, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // Orbiting Force Particles
+  particles.forEach(p => {
+    p.angle += p.speed * (isCorrupted ? 2.5 : 1);
+    const px = Math.cos(p.angle) * p.radius;
+    const py = Math.sin(p.angle) * p.radius;
+    ctx.fillStyle = activeColor;
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath();
+    ctx.arc(px, py, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.restore();
+
+  // Click Ripples
+  ripples.forEach((rip, idx) => {
+    rip.r += 4.5;
+    rip.alpha -= 0.015;
+    ctx.save();
+    ctx.strokeStyle = activeColor;
+    ctx.globalAlpha = Math.max(0, rip.alpha);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(rip.x, rip.y, rip.r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+    if (rip.alpha <= 0) ripples.splice(idx, 1);
+  });
+
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
